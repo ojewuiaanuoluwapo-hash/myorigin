@@ -6,7 +6,6 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 
-<!-- PAYSTACK -->
 <script src="https://js.paystack.co/v1/inline.js"></script>
 
 <style>
@@ -48,12 +47,6 @@ button {
 
 .your {
   color: #4CAF50;
-  animation: glow 1.5s infinite alternate;
-}
-
-@keyframes glow {
-  from { text-shadow: 0 0 5px #4CAF50; }
-  to { text-shadow: 0 0 15px #4CAF50; }
 }
 
 .card {
@@ -74,15 +67,6 @@ button {
   justify-content: center;
   align-items: center;
 }
-
-.paywall-content {
-  text-align: center;
-  padding: 30px;
-}
-
-.paywall-content button {
-  background: #4CAF50;
-}
 </style>
 </head>
 
@@ -97,7 +81,8 @@ button {
   <input id="state" placeholder="State">
   <input id="lga" placeholder="Local Government Area">
 
-  <button onclick="alert('button works')">
+  <!-- ✅ FIXED BUTTON -->
+  <button onclick="searchHistory()">
     Discover <span class="your">YOUR</span> History
   </button>
 </div>
@@ -115,7 +100,7 @@ button {
 
 <div id="paywall">
   <div class="paywall-content">
-    <h1>📜 Knowledge comes at a cost, historian...</h1>
+    <h1>📜 Knowledge comes at a cost</h1>
     <p>Unlock full access for ₦500</p>
     <button onclick="unlockPremium()">Pay ₦500</button>
   </div>
@@ -153,9 +138,12 @@ async function searchHistory() {
 
     document.getElementById("surnameTitle").innerHTML = surname.toUpperCase();
 
-    document.getElementById("meaning").innerHTML =
-      "👤 <strong>First Name Meaning</strong><br><br>" + data.firstNameMeaning +
-      "<br><br>👪 <strong>Surname Meaning</strong><br><br>" + data.surnameMeaning;
+    // ✅ FIXED IDs
+    document.getElementById("fnameMeaning").innerHTML =
+      "👤 <strong>First Name Meaning</strong><br><br>" + data.firstNameMeaning;
+
+    document.getElementById("surnameMeaning").innerHTML =
+      "📛 <strong>Surname Meaning</strong><br><br>" + data.surnameMeaning;
 
     document.getElementById("origin").innerHTML =
       "🌍 <strong>Origin</strong><br><br>" + data.origin;
@@ -168,7 +156,7 @@ async function searchHistory() {
 
   } catch (err) {
     console.log(err);
-    alert("Something went wrong");
+    alert("Server error — check backend");
   }
 }
 
