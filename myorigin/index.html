@@ -4,8 +4,9 @@
 <meta charset="UTF-8">
 <title>MyOrigin.NG</title>
 
-<!-- 🔥 PREMIUM FONTS -->
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+
+<script src="https://js.paystack.co/v1/inline.js"></script>
 
 <style>
 body {
@@ -16,18 +17,9 @@ body {
   background-image: url("https://www.transparenttextures.com/patterns/african-pattern.png");
 }
 
-/* 🔥 HEADER STYLE */
 h1 {
   font-family: 'Playfair Display', serif;
   font-size: 34px;
-  letter-spacing: 1px;
-  margin-bottom: 5px;
-}
-
-p {
-  font-size: 14px;
-  opacity: 0.85;
-  margin-bottom: 25px;
 }
 
 .container {
@@ -42,7 +34,6 @@ input {
   margin: 10px 0;
   border-radius: 8px;
   border: none;
-  font-size: 15px;
 }
 
 button {
@@ -50,81 +41,31 @@ button {
   padding: 15px;
   background: #8D6E63;
   color: white;
-  border: none;
   border-radius: 8px;
-  font-size: 16px;
   cursor: pointer;
-  transition: 0.2s;
-}
-
-button:hover {
-  transform: scale(1.03);
 }
 
 .your {
   color: #4CAF50;
-  animation: glow 1.5s infinite alternate;
-}
-
-@keyframes glow {
-  from { text-shadow: 0 0 5px #4CAF50; }
-  to { text-shadow: 0 0 15px #4CAF50; }
 }
 
 .card {
-  background: rgba(93, 64, 55, 0.95);
+  background: rgba(93,64,55,0.95);
   padding: 18px;
   border-radius: 12px;
   margin-top: 18px;
 }
 
-#resultsPage {
-  display: none;
-}
+#resultsPage { display: none; }
 
-/* 🔥 PAYWALL */
 #paywall {
   position: fixed;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
   background: rgba(20,10,5,0.95);
   display: none;
   justify-content: center;
   align-items: center;
-  z-index: 999;
-  animation: fadeIn 0.4s ease;
-}
-
-.paywall-content {
-  text-align: center;
-  padding: 30px;
-  max-width: 400px;
-  animation: scaleUp 0.4s ease;
-}
-
-.paywall-content h1 {
-  font-size: 26px;
-}
-
-.paywall-content p {
-  margin: 20px 0;
-  line-height: 1.5;
-}
-
-.paywall-content button {
-  background: #4CAF50;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes scaleUp {
-  from { transform: scale(0.8); }
-  to { transform: scale(1); }
 }
 </style>
 </head>
@@ -139,8 +80,8 @@ button:hover {
   <input id="lname" placeholder="Surname">
   <input id="state" placeholder="State">
   <input id="lga" placeholder="Local Government Area">
-  <input id="family" placeholder="Family House Name (Optional)">
 
+  <!-- ✅ FIXED BUTTON -->
   <button onclick="searchHistory()">
     Discover <span class="your">YOUR</span> History
   </button>
@@ -149,27 +90,19 @@ button:hover {
 <div id="resultsPage" class="container">
   <h2 id="surnameTitle"></h2>
 
-  <div class="card" id="meaning"></div>
+  <div class="card" id="fnameMeaning"></div>
+  <div class="card" id="surnameMeaning"></div>
   <div class="card" id="origin"></div>
   <div class="card" id="context"></div>
-
-  <div class="card">
-    💎 <strong>Join Premium (₦500)</strong><br><br>
-    Dive deeper into your full history and discover just how much royal blood flows through you.
-  </div>
 
   <button onclick="goBack()">← Back</button>
 </div>
 
-<!-- 🔥 PAYWALL -->
 <div id="paywall">
   <div class="paywall-content">
-    <h1>📜 Knowledge comes at a cost, historian...</h1>
-    <p>
-      With as little as <strong>₦500</strong>, unlock deeper truths about your lineage —  
-      and even uncover the stories behind your friends.
-    </p>
-    <button onclick="unlockPremium()">Unlock for ₦500</button>
+    <h1>📜 Knowledge comes at a cost</h1>
+    <p>Unlock full access for ₦500</p>
+    <button onclick="unlockPremium()">Pay ₦500</button>
   </div>
 </div>
 
@@ -179,33 +112,25 @@ async function searchHistory() {
   const surname = document.getElementById("lname").value;
   const state = document.getElementById("state").value;
   const lga = document.getElementById("lga").value;
-  const familyHouse = document.getElementById("family").value;
 
   if (!surname) {
     alert("Enter a surname");
     return;
   }
 
-  let count = localStorage.getItem("searchCount") || 0;
-  count = parseInt(count);
-
-  if (count >= 3) {
-    document.getElementById("paywall").style.display = "flex";
-    return;
-  }
-
-  document.getElementById("surnameTitle").innerHTML = "⏳ Tracing your ancestry...";
+  document.getElementById("surnameTitle").innerHTML = "⏳ Loading...";
 
   try {
-    const res = await fetch("/api/search", { // ✅ FIXED HERE
+    const res = await fetch("/api/search", {
       method: "POST",
-      headers: {"Content-Type": "application/json"},
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({
         firstName,
         surname,
         state,
-        lga,
-        familyHouse
+        lga
       })
     });
 
@@ -213,34 +138,31 @@ async function searchHistory() {
 
     document.getElementById("surnameTitle").innerHTML = surname.toUpperCase();
 
-    document.getElementById("meaning").innerHTML =
-      "🧑 <strong>First Name Meaning</strong><br><br>" + data.firstNameMeaning +
-      "<br><br>👪 <strong>Surname Meaning</strong><br><br>" + data.surnameMeaning;
+    // ✅ FIXED IDs
+    document.getElementById("fnameMeaning").innerHTML =
+      "👤 <strong>First Name Meaning</strong><br><br>" + data.firstNameMeaning;
+
+    document.getElementById("surnameMeaning").innerHTML =
+      "📛 <strong>Surname Meaning</strong><br><br>" + data.surnameMeaning;
 
     document.getElementById("origin").innerHTML =
       "🌍 <strong>Origin</strong><br><br>" + data.origin;
 
     document.getElementById("context").innerHTML =
-      "🧬 <strong>Cultural Insight</strong><br><br>" + data.insight;
-
-    localStorage.setItem("searchCount", count + 1);
+      "🧬 <strong>Insight</strong><br><br>" + data.insight;
 
     document.getElementById("homePage").style.display = "none";
     document.getElementById("resultsPage").style.display = "block";
 
   } catch (err) {
     console.log(err);
-    alert("Error connecting to server");
+    alert("Server error — check backend");
   }
 }
 
 function goBack() {
   document.getElementById("homePage").style.display = "block";
   document.getElementById("resultsPage").style.display = "none";
-}
-
-function unlockPremium() {
-  alert("💳 Payment integration next 😏");
 }
 </script>
 
