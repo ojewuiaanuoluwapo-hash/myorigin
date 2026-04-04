@@ -175,9 +175,11 @@ button:hover {
 
 <script>
 async function searchHistory() {
+  const firstName = document.getElementById("fname").value;
   const surname = document.getElementById("lname").value;
   const state = document.getElementById("state").value;
   const lga = document.getElementById("lga").value;
+  const familyHouse = document.getElementById("family").value;
 
   if (!surname) {
     alert("Enter a surname");
@@ -195,18 +197,31 @@ async function searchHistory() {
   document.getElementById("surnameTitle").innerHTML = "⏳ Tracing your ancestry...";
 
   try {
-    const res = await fetch("http://localhost:3000/search", {
+    const res = await fetch("/api/search", { // ✅ FIXED HERE
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ surname, state, lga })
+      body: JSON.stringify({
+        firstName,
+        surname,
+        state,
+        lga,
+        familyHouse
+      })
     });
 
     const data = await res.json();
 
     document.getElementById("surnameTitle").innerHTML = surname.toUpperCase();
-    document.getElementById("meaning").innerHTML = "🔍 <strong>Meaning</strong><br><br>" + data.meaning;
-    document.getElementById("origin").innerHTML = "🌍 <strong>Origin</strong><br><br>" + data.origin;
-    document.getElementById("context").innerHTML = "🧬 <strong>Cultural Insight</strong><br><br>" + data.insight;
+
+    document.getElementById("meaning").innerHTML =
+      "🧑 <strong>First Name Meaning</strong><br><br>" + data.firstNameMeaning +
+      "<br><br>👪 <strong>Surname Meaning</strong><br><br>" + data.surnameMeaning;
+
+    document.getElementById("origin").innerHTML =
+      "🌍 <strong>Origin</strong><br><br>" + data.origin;
+
+    document.getElementById("context").innerHTML =
+      "🧬 <strong>Cultural Insight</strong><br><br>" + data.insight;
 
     localStorage.setItem("searchCount", count + 1);
 
