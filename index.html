@@ -127,33 +127,25 @@ async function searchHistory() {
   const surname = document.getElementById("lname").value;
   const state = document.getElementById("state").value;
   const lga = document.getElementById("lga").value;
-  const familyHouse = document.getElementById("family").value;
 
   if (!surname) {
     alert("Enter a surname");
     return;
   }
 
-  let count = localStorage.getItem("searchCount") || 0;
-  count = parseInt(count);
-
-  if (count >= 3) {
-    document.getElementById("paywall").style.display = "flex";
-    return;
-  }
-
-  document.getElementById("surnameTitle").innerHTML = "⏳ Tracing your ancestry...";
+  document.getElementById("surnameTitle").innerHTML = "⏳ Loading...";
 
   try {
-    const res = await fetch("/api/search", { // ✅ FIXED HERE
+    const res = await fetch("/api/search", {
       method: "POST",
-      headers: {"Content-Type": "application/json"},
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({
         firstName,
         surname,
         state,
-        lga,
-        familyHouse
+        lga
       })
     });
 
@@ -162,33 +154,27 @@ async function searchHistory() {
     document.getElementById("surnameTitle").innerHTML = surname.toUpperCase();
 
     document.getElementById("meaning").innerHTML =
-      "🧑 <strong>First Name Meaning</strong><br><br>" + data.firstNameMeaning +
+      "👤 <strong>First Name Meaning</strong><br><br>" + data.firstNameMeaning +
       "<br><br>👪 <strong>Surname Meaning</strong><br><br>" + data.surnameMeaning;
 
     document.getElementById("origin").innerHTML =
       "🌍 <strong>Origin</strong><br><br>" + data.origin;
 
     document.getElementById("context").innerHTML =
-      "🧬 <strong>Cultural Insight</strong><br><br>" + data.insight;
-
-    localStorage.setItem("searchCount", count + 1);
+      "🧬 <strong>Insight</strong><br><br>" + data.insight;
 
     document.getElementById("homePage").style.display = "none";
     document.getElementById("resultsPage").style.display = "block";
 
   } catch (err) {
     console.log(err);
-    alert("Error connecting to server");
+    alert("Something went wrong");
   }
 }
 
 function goBack() {
   document.getElementById("homePage").style.display = "block";
   document.getElementById("resultsPage").style.display = "none";
-}
-
-function unlockPremium() {
-  alert("💳 Payment integration next 😏");
 }
 </script>
 
