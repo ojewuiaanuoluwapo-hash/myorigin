@@ -7,11 +7,11 @@ app.use(cors());
 app.use(express.json());
 
 const openai = new OpenAI({
-  apiKey: "process.env.OPENAI_API_KEY"
+  apiKey: process.env.OPENAI_API_KEY
 });
 
 app.post("/search", async (req, res) => {
-  const { surname, state, lga } = req.body;
+  const { firstName, surname, state, lga, familyHouse } = req.body;
 
   try {
     const completion = await openai.chat.completions.create({
@@ -19,20 +19,24 @@ app.post("/search", async (req, res) => {
       messages: [
         {
           role: "system",
-          content: "You are an expert Nigerian historian. Give rich, specific, non-generic explanations of surnames using cultural, linguistic, and regional context."
+          content: "You are an expert Nigerian historian. Give rich, specific, non-generic explanations using cultural, linguistic, and regional context."
         },
         {
           role: "user",
           content: `
+User details:
+First Name: ${firstName}
 Surname: ${surname}
 State: ${state}
 LGA: ${lga}
+Family House: ${familyHouse}
 
 Give:
 
-Meaning: (clear literal meaning)
+First Name Meaning: (clear meaning of the first name)
+Surname Meaning: (clear meaning of the surname)
 Origin: (specific tribe + region, not generic)
-Insight: (deep cultural explanation tied to traditions, history, or lineage)
+Insight: (deep cultural explanation tied to traditions, ancestry, or lineage)
 
 Make it feel intelligent, human, and specific — not generic.
 `
@@ -43,16 +47,18 @@ Make it feel intelligent, human, and specific — not generic.
     const text = completion.choices[0].message.content;
 
     // Extract sections cleanly
-    const meaning = text.split("Origin:")[0].replace("Meaning:", "").trim();
+    const firstNameMeaning = text.split("Surname Meaning:")[0].replace("First Name Meaning:", "").trim();
+    const surnameMeaning = text.split("Surname Meaning:")[1]?.split("Origin:")[0]?.trim() || "";
     const origin = text.split("Origin:")[1]?.split("Insight:")[0]?.trim() || "";
     const insight = text.split("Insight:")[1]?.trim() || "";
 
-    res.json({ meaning, origin, insight });
+    res.json({ firstNameMeaning, surnameMeaning, origin, insight });
 
   } catch (error) {
     console.log(error);
     res.json({
-      meaning: "Something went wrong. Try again.",
+      firstNameMeaning: "Something went wrong. Try again.",
+      surnameMeaning: "",
       origin: "",
       insight: ""
     });
