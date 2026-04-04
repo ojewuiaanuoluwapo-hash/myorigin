@@ -127,65 +127,68 @@ async function searchHistory() {
   const surname = document.getElementById("lname").value;
   const state = document.getElementById("state").value;
   const lga = document.getElementById("lga").value;
+  const familyHouse = document.getElementById("family").value;
+
+  if (!surname) {
+    alert("Enter a surname");
+    return;
+  }
 
   let count = localStorage.getItem("searchCount") || 0;
-  let premium = localStorage.getItem("premiumUser");
+  count = parseInt(count);
 
-  if (count >= 3 && !premium) {
+  if (count >= 3) {
     document.getElementById("paywall").style.display = "flex";
     return;
   }
 
-  document.getElementById("surnameTitle").innerHTML = "⏳ Loading...";
+  document.getElementById("surnameTitle").innerHTML = "⏳ Tracing your ancestry...";
 
-  const res = await fetch("/api/search", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ firstName, surname, state, lga })
-  });
+  try {
+    const res = await fetch("/api/search", { // ✅ FIXED HERE
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        firstName,
+        surname,
+        state,
+        lga,
+        familyHouse
+      })
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  document.getElementById("surnameTitle").innerHTML = surname.toUpperCase();
+    document.getElementById("surnameTitle").innerHTML = surname.toUpperCase();
 
-  document.getElementById("fnameMeaning").innerHTML =
-    "👤 <strong>First Name Meaning</strong><br><br>" + data.firstNameMeaning;
+    document.getElementById("meaning").innerHTML =
+      "🧑 <strong>First Name Meaning</strong><br><br>" + data.firstNameMeaning +
+      "<br><br>👪 <strong>Surname Meaning</strong><br><br>" + data.surnameMeaning;
 
-  document.getElementById("surnameMeaning").innerHTML =
-    "🔍 <strong>Surname Meaning</strong><br><br>" + data.surnameMeaning;
+    document.getElementById("origin").innerHTML =
+      "🌍 <strong>Origin</strong><br><br>" + data.origin;
 
-  document.getElementById("origin").innerHTML =
-    "🌍 <strong>Origin</strong><br><br>" + data.origin;
+    document.getElementById("context").innerHTML =
+      "🧬 <strong>Cultural Insight</strong><br><br>" + data.insight;
 
-  document.getElementById("context").innerHTML =
-    "🧬 <strong>Cultural Insight</strong><br><br>" + data.insight;
+    localStorage.setItem("searchCount", count + 1);
 
-  localStorage.setItem("searchCount", parseInt(count) + 1);
+    document.getElementById("homePage").style.display = "none";
+    document.getElementById("resultsPage").style.display = "block";
 
-  document.getElementById("homePage").style.display = "none";
-  document.getElementById("resultsPage").style.display = "block";
-}
-
-function unlockPremium() {
-  let handler = PaystackPop.setup({
-    key: "pk_live_fb293b1119a67323c42f736eb32ff9638826358b",
-    email: "user@email.com",
-    amount: 50000,
-    currency: "NGN",
-
-    callback: function(response) {
-      alert("Payment successful 🎉");
-      localStorage.setItem("premiumUser", "true");
-      document.getElementById("paywall").style.display = "none";
-    }
-  });
-
-  handler.openIframe();
+  } catch (err) {
+    console.log(err);
+    alert("Error connecting to server");
+  }
 }
 
 function goBack() {
   document.getElementById("homePage").style.display = "block";
   document.getElementById("resultsPage").style.display = "none";
+}
+
+function unlockPremium() {
+  alert("💳 Payment integration next 😏");
 }
 </script>
 
