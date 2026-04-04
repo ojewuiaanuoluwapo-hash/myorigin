@@ -47,14 +47,20 @@ Insight:
       ]
     });
 
-    const text = completion.choices[0].message.content;
+   const text = completion.choices[0].message.content;
 
-    res.status(200).json({
-      firstNameMeaning: text,
-      surnameMeaning: "",
-      origin: "",
-      insight: ""
-    });
+// Split response cleanly
+const firstNameMeaning = text.split("Surname Meaning:")[0].replace("First Name Meaning:", "").trim();
+const surnameMeaning = text.split("Surname Meaning:")[1]?.split("Origin:")[0]?.trim() || "";
+const origin = text.split("Origin:")[1]?.split("Insight:")[0]?.trim() || "";
+const insight = text.split("Insight:")[1]?.trim() || "";
+
+res.status(200).json({
+  firstNameMeaning,
+  surnameMeaning,
+  origin,
+  insight
+});
 
   } catch (err) {
     console.log(err);
