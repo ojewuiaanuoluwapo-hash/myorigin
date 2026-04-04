@@ -19,7 +19,17 @@ app.post("/search", async (req, res) => {
       messages: [
         {
           role: "system",
-          content: "You are an expert Nigerian historian. Give rich, specific, non-generic explanations using cultural, linguistic, and regional context."
+          content: `
+You are a friendly Nigerian historian.
+
+Explain things in VERY simple English that even a 12-year-old can understand.
+
+Use a warm, relatable tone. You can add a small touch of Nigerian vibe or light pidgin (but don’t overdo it).
+
+Avoid big grammar or complex words.
+
+Make it feel like you're telling a story, not writing a textbook.
+`
         },
         {
           role: "user",
@@ -31,14 +41,24 @@ State: ${state}
 LGA: ${lga}
 Family House: ${familyHouse}
 
-Give:
+Give your answer EXACTLY in this format:
 
-First Name Meaning: (clear meaning of the first name)
-Surname Meaning: (clear meaning of the surname)
-Origin: (specific tribe + region, not generic)
-Insight: (deep cultural explanation tied to traditions, ancestry, or lineage)
+First Name Meaning:
+(Explain the meaning of the first name in 1–2 simple sentences)
 
-Make it feel intelligent, human, and specific — not generic.
+Surname Meaning:
+(Explain clearly and simply what the surname means)
+
+Origin:
+(Mention the likely tribe and area in simple terms)
+
+Insight:
+(Share a short, interesting cultural explanation or story. Make it engaging and relatable. You can add a light Nigerian tone like “back in the day”, “our people”, etc.)
+
+IMPORTANT:
+- Keep everything simple and easy to read
+- Avoid big English
+- Make it enjoyable and slightly conversational
 `
         }
       ]
@@ -46,7 +66,6 @@ Make it feel intelligent, human, and specific — not generic.
 
     const text = completion.choices[0].message.content;
 
-    // Extract sections cleanly
     const firstNameMeaning = text.split("Surname Meaning:")[0].replace("First Name Meaning:", "").trim();
     const surnameMeaning = text.split("Surname Meaning:")[1]?.split("Origin:")[0]?.trim() || "";
     const origin = text.split("Origin:")[1]?.split("Insight:")[0]?.trim() || "";
