@@ -16,7 +16,7 @@ module.exports = async function handler(req, res) {
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-    // 🔥 FREE vs PREMIUM PROMPTS
+    // 🔥 PROMPTS
     let messages;
 
     if (!isPremium) {
@@ -34,19 +34,19 @@ Surname: ${surname}
 State: ${state}
 LGA: ${lga}
 
-Return EXACTLY:
+Return STRICTLY in this format. Do not add anything else:
 
 First Name Meaning:
-...
+[answer]
 
 Surname Meaning:
-...
+[answer]
 
 Origin:
-...
+[answer]
 
 Insight:
-...
+[answer]
 `,
         },
       ];
@@ -66,81 +66,100 @@ State: ${state}
 LGA: ${lga}
 
 Instructions:
-- Be specific to the user's region
-- Suggest realistic ancestral occupations
-- Describe migration patterns across generations
-- Suggest possible royal lineage or heritage
-- Make it engaging and believable
+- Be specific to the region
+- Suggest realistic ancestral occupations with years to back it up
+- Describe migration patterns with years to back it up
+- Suggest possible royal lineage
+- Make it engaging and true
 
-Return EXACTLY:
+Return STRICTLY in this format. Do not add anything else:
 
 First Name Meaning:
-...
+[answer]
 
 Surname Meaning:
-...
+[answer]
 
 Origin:
-...
+[answer]
 
 Ancestral Occupation:
-...
+[answer]
 
 Migration Pattern:
-...
+[answer]
 
 Royal/Heritage Insight:
-...
+[answer]
 
 Cultural Insight:
-...
+[answer]
 `,
         },
       ];
     }
 
+    // 🔥 API CALL
     const completion = await openai.chat.completions.create({
       model: "gpt-4.1-mini",
       messages,
     });
 
-    const text = completion.choices[0].message.content || "";
+    const text = completion.choices?.[0]?.message?.content || "";
 
-    // 🔥 SAFE PARSER (NO MORE "undefined")
-    const getSection = (label, nextLabel) => {
-      const part = text.split(label)[1];
-      if (!part) return "";
+    console.log("AI RESPONSE:", text); // 👈 DEBUG (important)
 
-      if (nextLabel) {
-        return part.split(nextLabel)[0]?.trim() || "";
+    // 🔥 SUPER SAFE PARSER
+    const extract = (label, nextLabels = []) => {
+      const start = text.indexOf(label);
+      if (start === -1) return "";
+
+      let end = text.length;
+
+      for (const next of nextLabels) {
+        const idx = text.indexOf(next, start + label.length);
+        if (idx !== -1 && idx < end) {
+          end = idx;
+        }
       }
 
-      return part.trim();
+      return text
+        .substring(start + label.length, end)
+        .replace(/\n/g, " ")
+        .trim();
     };
 
-    const firstNameMeaning = getSection("First Name Meaning:", "Surname Meaning:");
-    const surnameMeaning = getSection("Surname Meaning:", "Origin:");
+    const firstNameMeaning = extract("First Name Meaning:", ["Surname Meaning:"]);
+    const surnameMeaning = extract("Surname Meaning:", ["Origin:"]);
 
-    const origin =
-      getSection("Origin:", "Ancestral Occupation:") ||
-      getSection("Origin:", "Insight:");
+    const origin = extract("Origin:", [
+      "Ancestral Occupation:",
+      "Insight:",
+    ]);
 
-    const ancestralOccupation = getSection("Ancestral Occupation:", "Migration Pattern:");
-    const migration = getSection("Migration Pattern:", "Royal/Heritage Insight:");
-    const royal = getSection("Royal/Heritage Insight:", "Cultural Insight:");
+    const ancestralOccupation = extract("Ancestral Occupation:", [
+      "Migration Pattern:",
+    ]);
 
-    const insight =
-      getSection("Cultural Insight:") ||
-      getSection("Insight:");
+    const migration = extract("Migration Pattern:", [
+      "Royal/Heritage Insight:",
+    ]);
 
+    const royal = extract("Royal/Heritage Insight:", [
+      "Cultural Insight:",
+    ]);
+
+    const insight = extract("Cultural Insight:", []) || extract("Insight:", []);
+
+    // 🔥 RETURN CLEAN DATA (NO UNDEFINED EVER)
     return res.status(200).json({
-      firstNameMeaning,
-      surnameMeaning,
-      origin,
-      insight,
-      ancestralOccupation,
-      migration,
-      royal,
+      firstNameMeaning: firstNameMeaning || "",
+      surnameMeaning: surnameMeaning || "",
+      origin: origin || "",
+      insight: insight || "",
+      ancestralOccupation: ancestralOccupation || "",
+      migration: migration || "",
+      royal: royal || "",
     });
 
   } catch (err) {
