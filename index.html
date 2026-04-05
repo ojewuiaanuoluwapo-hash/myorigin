@@ -198,10 +198,12 @@ async function searchHistory() {
   let count = localStorage.getItem("searchCount") || 0;
   count = parseInt(count);
 
-  if (count >= 3) {
-    document.getElementById("paywall").style.display = "flex";
-    return;
-  }
+  const isPremium = localStorage.getItem("isPremium");
+
+if (count >= 3 && !isPremium) {
+  document.getElementById("paywall").style.display = "flex";
+  return;
+}
 
   document.getElementById("surnameTitle").innerHTML = "⏳ Tracing your ancestry...";
 
@@ -253,11 +255,13 @@ function unlockPremium() {
     amount: 50000,
 
     callback: function(response) {
-      alert("Payment successful 🎉");
+  alert("Payment successful 🎉");
 
-      // remove paywall
-      document.getElementById("paywall").style.display = "none";
-    },
+  // mark user as paid
+  localStorage.setItem("isPremium", "true");
+
+  document.getElementById("paywall").style.display = "none";
+},
 
     onClose: function() {
       alert("Transaction cancelled");
