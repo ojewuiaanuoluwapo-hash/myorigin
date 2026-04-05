@@ -200,7 +200,10 @@ async function searchHistory() {
 
   const isPremium = localStorage.getItem("isPremium");
 
-if (count >= 3 && !isPremium) {
+const surname = document.getElementById("lname").value;
+let paidNames = JSON.parse(localStorage.getItem("paidNames") || "[]");
+
+if (count >= 3 && !paidNames.includes(surname)) {
   document.getElementById("paywall").style.display = "flex";
   return;
 }
@@ -254,13 +257,24 @@ function unlockPremium() {
     email: "test@email.com",
     amount: 50000,
 
-    callback: function(response) {
+   callback: function(response) {
   alert("Payment successful 🎉");
 
-  // mark user as paid
-  localStorage.setItem("isPremium", "true");
+  const surname = document.getElementById("lname").value;
+
+  // store paid name
+  let paidNames = JSON.parse(localStorage.getItem("paidNames") || "[]");
+
+  if (!paidNames.includes(surname)) {
+    paidNames.push(surname);
+  }
+
+  localStorage.setItem("paidNames", JSON.stringify(paidNames));
 
   document.getElementById("paywall").style.display = "none";
+
+  // 🔥 Immediately run search again after payment
+  searchHistory();
 },
 
     onClose: function() {
