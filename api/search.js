@@ -1,7 +1,6 @@
 const OpenAI = require("openai");
 
 module.exports = async function handler(req, res) {
-  // Only allow POST
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -17,11 +16,10 @@ module.exports = async function handler(req, res) {
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-    // 🔥 MESSAGE LOGIC (FREE vs PREMIUM)
+    // 🔥 FREE vs PREMIUM PROMPTS
     let messages;
 
     if (!isPremium) {
-      // 🆓 FREE VERSION
       messages = [
         {
           role: "system",
@@ -53,7 +51,6 @@ Insight:
         },
       ];
     } else {
-      // 💎 PREMIUM VERSION
       messages = [
         {
           role: "system",
@@ -74,7 +71,6 @@ Instructions:
 - Describe migration patterns across generations
 - Suggest possible royal lineage or heritage
 - Make it engaging and believable
-- Write like a storyteller, not a robot
 
 Return EXACTLY:
 
@@ -103,7 +99,6 @@ Cultural Insight:
       ];
     }
 
-    // 🔥 CALL OPENAI
     const completion = await openai.chat.completions.create({
       model: "gpt-4.1-mini",
       messages,
@@ -111,40 +106,33 @@ Cultural Insight:
 
     const text = completion.choices[0].message.content || "";
 
-    // 🔍 PARSING RESPONSE
+    // 🔥 SAFE PARSER (NO MORE "undefined")
+    const getSection = (label, nextLabel) => {
+      const part = text.split(label)[1];
+      if (!part) return "";
 
-    const firstNameMeaning =
-      text.split("Surname Meaning:")[0]
-        ?.replace("First Name Meaning:", "")
-        .trim() || "";
+      if (nextLabel) {
+        return part.split(nextLabel)[0]?.trim() || "";
+      }
 
-    const surnameMeaning =
-      text.split("Surname Meaning:")[1]?.split("Origin:")[0]?.trim() || "";
+      return part.trim();
+    };
+
+    const firstNameMeaning = getSection("First Name Meaning:", "Surname Meaning:");
+    const surnameMeaning = getSection("Surname Meaning:", "Origin:");
 
     const origin =
-      text.split("Origin:")[1]?.split("Ancestral Occupation:")[0]?.trim() ||
-      text.split("Origin:")[1]?.split("Insight:")[0]?.trim() ||
-      "";
+      getSection("Origin:", "Ancestral Occupation:") ||
+      getSection("Origin:", "Insight:");
 
-    const ancestralOccupation =
-      text.split("Ancestral Occupation:")[1]
-        ?.split("Migration Pattern:")[0]
-        ?.trim() || "";
-
-    const migration =
-      text.split("Migration Pattern:")[1]
-        ?.split("Royal/Heritage Insight:")[0]
-        ?.trim() || "";
-
-    const royal =
-      text.split("Royal/Heritage Insight:")[1]
-        ?.split("Cultural Insight:")[0]
-        ?.trim() || "";
+    const ancestralOccupation = getSection("Ancestral Occupation:", "Migration Pattern:");
+    const migration = getSection("Migration Pattern:", "Royal/Heritage Insight:");
+    const royal = getSection("Royal/Heritage Insight:", "Cultural Insight:");
 
     const insight =
-      text.split("Insight:")[1]?.trim() || "";
+      getSection("Cultural Insight:") ||
+      getSection("Insight:");
 
-    // 🚀 RESPONSE BACK TO FRONTEND
     return res.status(200).json({
       firstNameMeaning,
       surnameMeaning,
