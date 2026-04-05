@@ -23,7 +23,7 @@ module.exports = async function handler(req, res) {
         {
           role: "system",
           content:
-            "You are a friendly Nigerian historian. Use simple English and small pidgin. Make it easy to understand.",
+            "You are a friendly Nigerian historian. Use simple English and a friendly tone. Make it easy to understand.",
         },
         {
           role: "user",
