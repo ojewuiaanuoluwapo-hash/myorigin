@@ -186,6 +186,7 @@ button:hover {
 
 <script>
 async function searchHistory() {
+  const firstName = document.getElementById("fname").value;
   const surname = document.getElementById("lname").value;
   const state = document.getElementById("state").value;
   const lga = document.getElementById("lga").value;
@@ -195,78 +196,73 @@ async function searchHistory() {
     return;
   }
 
-  let count = localStorage.getItem("searchCount") || 0;
-  count = parseInt(count);
+  let count = parseInt(localStorage.getItem("searchCount") || "0");
 
-  const isPremium = localStorage.getItem("isPremium");
+  let paidNames = JSON.parse(localStorage.getItem("paidNames") || "[]");
 
-const surname = document.getElementById("lname").value;
-let paidNames = JSON.parse(localStorage.getItem("paidNames") || "[]");
-
-if (count >= 3 && !paidNames.includes(surname)) {
-  document.getElementById("paywall").style.display = "flex";
-  return;
-}
+  if (count >= 3 && !paidNames.includes(surname)) {
+    document.getElementById("paywall").style.display = "flex";
+    return;
+  }
 
   document.getElementById("surnameTitle").innerHTML = "⏳ Tracing your ancestry...";
 
   try {
     const res = await fetch("/api/search", {
-  method: "POST",
-  headers: {"Content-Type": "application/json"},
-  const paidNames = JSON.parse(localStorage.getItem("paidNames") || "[]");
-
-body: JSON.stringify({ 
-  firstName,
-  surname,
-  state,
-  lga,
-  isPremium: paidNames.includes(surname)
-})
-});
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ 
+        firstName,
+        surname,
+        state,
+        lga,
+        isPremium: paidNames.includes(surname)
+      })
+    });
 
     const data = await res.json();
 
     document.getElementById("surnameTitle").innerHTML = surname.toUpperCase();
-   document.getElementById("meaning").innerHTML =
-  "🔍 <strong>First Name Meaning</strong><br><br>" + data.firstNameMeaning +
-  "<br><br>🔍 <strong>Surname Meaning</strong><br><br>" + data.surnameMeaning;
 
-document.getElementById("origin").innerHTML =
-  "🌍 <strong>Origin</strong><br><br>" + data.origin;
+    document.getElementById("meaning").innerHTML =
+      "🔍 <strong>First Name Meaning</strong><br><br>" + data.firstNameMeaning +
+      "<br><br>🔍 <strong>Surname Meaning</strong><br><br>" + data.surnameMeaning;
 
-let premiumHTML = "";
+    document.getElementById("origin").innerHTML =
+      "🌍 <strong>Origin</strong><br><br>" + data.origin;
 
-if (data.ancestralOccupation) {
-  premiumHTML += `
-    <div class="card">
-      ⚒️ <strong>Ancestral Occupation</strong><br><br>
-      ${data.ancestralOccupation}
-    </div>
-  `;
-}
+    let premiumHTML = "";
 
-if (data.migration) {
-  premiumHTML += `
-    <div class="card">
-      🌍 <strong>Migration Pattern</strong><br><br>
-      ${data.migration}
-    </div>
-  `;
-}
+    if (data.ancestralOccupation) {
+      premiumHTML += `
+        <div class="card">
+          ⚒️ <strong>Ancestral Occupation</strong><br><br>
+          ${data.ancestralOccupation}
+        </div>
+      `;
+    }
 
-if (data.royal) {
-  premiumHTML += `
-    <div class="card">
-      👑 <strong>Royal / Heritage Insight</strong><br><br>
-      ${data.royal}
-    </div>
-  `;
-}
+    if (data.migration) {
+      premiumHTML += `
+        <div class="card">
+          🌍 <strong>Migration Pattern</strong><br><br>
+          ${data.migration}
+        </div>
+      `;
+    }
 
-document.getElementById("context").innerHTML =
-  "🧬 <strong>Cultural Insight</strong><br><br>" + data.insight +
-  premiumHTML;
+    if (data.royal) {
+      premiumHTML += `
+        <div class="card">
+          👑 <strong>Royal / Heritage Insight</strong><br><br>
+          ${data.royal}
+        </div>
+      `;
+    }
+
+    document.getElementById("context").innerHTML =
+      "🧬 <strong>Cultural Insight</strong><br><br>" + data.insight +
+      premiumHTML;
 
     localStorage.setItem("searchCount", count + 1);
 
