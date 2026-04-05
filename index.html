@@ -235,8 +235,38 @@ body: JSON.stringify({
 document.getElementById("origin").innerHTML =
   "🌍 <strong>Origin</strong><br><br>" + data.origin;
 
+let premiumHTML = "";
+
+if (data.ancestralOccupation) {
+  premiumHTML += `
+    <div class="card">
+      ⚒️ <strong>Ancestral Occupation</strong><br><br>
+      ${data.ancestralOccupation}
+    </div>
+  `;
+}
+
+if (data.migration) {
+  premiumHTML += `
+    <div class="card">
+      🌍 <strong>Migration Pattern</strong><br><br>
+      ${data.migration}
+    </div>
+  `;
+}
+
+if (data.royal) {
+  premiumHTML += `
+    <div class="card">
+      👑 <strong>Royal / Heritage Insight</strong><br><br>
+      ${data.royal}
+    </div>
+  `;
+}
+
 document.getElementById("context").innerHTML =
-  "🧬 <strong>Cultural Insight</strong><br><br>" + data.insight;
+  "🧬 <strong>Cultural Insight</strong><br><br>" + data.insight +
+  premiumHTML;
 
     localStorage.setItem("searchCount", count + 1);
 
