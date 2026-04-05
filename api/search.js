@@ -7,7 +7,7 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const { firstName, surname, state, lga } = req.body;
+    const { firstName, surname, state, lga, isPremium } = req.body;
 
     if (!surname) {
       return res.status(400).json({ error: "Surname is required" });
@@ -17,17 +17,18 @@ module.exports = async function handler(req, res) {
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4.1-mini",
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a friendly Nigerian historian. Use simple English and a friendly tone. Make it easy to understand.",
-        },
-        {
-          role: "user",
-          content: `
+    let messages;
+
+if (!isPremium) {
+  // 🆓 FREE VERSION
+  messages = [
+    {
+      role: "system",
+      content: "You are a friendly Nigerian historian. Use simple English and small pidgin."
+    },
+    {
+      role: "user",
+      content: `
 First Name: ${firstName}
 Surname: ${surname}
 State: ${state}
@@ -46,12 +47,62 @@ Origin:
 
 Insight:
 ...
-`,
-        },
-      ],
-    });
+`
+    }
+  ];
+} else {
+  // 💎 PREMIUM VERSION
+  messages = [
+    {
+      role: "system",
+      content: "You are a deeply knowledgeable Nigerian historian and storyteller. Be rich, detailed, and culturally grounded."
+    },
+    {
+      role: "user",
+      content: `
+First Name: ${firstName}
+Surname: ${surname}
+State: ${state}
+LGA: ${lga}
 
-    const text = completion.choices[0].message.content || "";
+Instructions:
+- Be specific to the region
+- Suggest realistic ancestral occupations
+- Describe migration patterns
+- Suggest possible royal lineage
+- Make it deep and engaging
+
+Return EXACTLY:
+
+First Name Meaning:
+...
+
+Surname Meaning:
+...
+
+Origin:
+...
+
+Ancestral Occupation:
+...
+
+Migration Pattern:
+...
+
+Royal/Heritage Insight:
+...
+
+Cultural Insight:
+...
+`
+    }
+  ];
+}
+
+const completion = await openai.chat.completions.create({
+  model: "gpt-4.1-mini",
+  messages
+});
 
     const firstNameMeaning =
       text.split("Surname Meaning:")[0]?.replace("First Name Meaning:", "").trim() || "";
