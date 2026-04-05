@@ -236,9 +236,26 @@ function goBack() {
 }
 
 function unlockPremium() {
-  alert("💳 Payment integration next 😏");
+  const handler = PaystackPop.setup({
+    key: "pk_live_fb293b1119a67323c42f736eb32ff9638826358b",
+    email: "test@email.com",
+    amount: 50000,
+
+    callback: function(response) {
+      alert("Payment successful 🎉");
+
+      // remove paywall
+      document.getElementById("paywall").style.display = "none";
+    },
+
+    onClose: function() {
+      alert("Transaction cancelled");
+    }
+  });
+
+  handler.openIframe();
 }
 </script>
-
+<script src="https://js.paystack.co/v1/inline.js"></script>
 </body>
 </html>
