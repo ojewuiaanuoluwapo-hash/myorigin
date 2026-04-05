@@ -214,12 +214,15 @@ if (count >= 3 && !paidNames.includes(surname)) {
     const res = await fetch("/api/search", {
   method: "POST",
   headers: {"Content-Type": "application/json"},
-  body: JSON.stringify({ 
-    firstName: document.getElementById("fname").value,
-    surname,
-    state,
-    lga
-  })
+  const paidNames = JSON.parse(localStorage.getItem("paidNames") || "[]");
+
+body: JSON.stringify({ 
+  firstName,
+  surname,
+  state,
+  lga,
+  isPremium: paidNames.includes(surname)
+})
 });
 
     const data = await res.json();
