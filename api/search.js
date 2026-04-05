@@ -104,14 +104,18 @@ const completion = await openai.chat.completions.create({
   messages
 });
 
+const text = completion.choices[0].message.content || "";
+
     const firstNameMeaning =
       text.split("Surname Meaning:")[0]?.replace("First Name Meaning:", "").trim() || "";
 
     const surnameMeaning =
       text.split("Surname Meaning:")[1]?.split("Origin:")[0]?.trim() || "";
 
-    const origin =
-      text.split("Origin:")[1]?.split("Insight:")[0]?.trim() || "";
+   const origin =
+  text.split("Origin:")[1]?.split("Ancestral Occupation:")[0]?.trim() ||
+  text.split("Origin:")[1]?.split("Insight:")[0]?.trim() ||
+  "";
 
     const insight =
       text.split("Insight:")[1]?.trim() || "";
